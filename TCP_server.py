@@ -1,8 +1,7 @@
 # Networking Project
 # Ruben, Emalee, Jake
-# 
-# This is the TCP Server 
-# This establishes a TCP socket and connection #
+# This is the TCP Server
+# This establishes a TCP socket and connection
 
 # Libraries
 from threading import Thread
@@ -17,12 +16,13 @@ pygame.init()
 
 # Grabs the current screen resolution
 infoObj = pygame.display.Info()
-WID = infoObj.current_w # Width
-HGT = infoObj.current_h # Height
+WID = infoObj.current_w  # Width
+HGT = infoObj.current_h  # Height
+
 
 def retreive_frame(conn):
     with mss() as sct:
-        # The region that is needed to be captured - using the Width and Height defined
+        # The region that is needed to be captured
         monitor = {'top': 0, 'left': 0, 'width': WID, 'height': HGT}
         while 'capturing':
             # Capture the screen
@@ -39,32 +39,31 @@ def retreive_frame(conn):
             # Send pixels
             conn.sendall(pixels)
 
+
 def main(port=5000):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         local = socket.gethostbyname(socket.gethostname())
-        sock.bind((local, port)) # Bind to group and host
-        sock.listen(10) # Allows 10 machines to listen
+        sock.bind((local, port))  # Bind to group and host
+        sock.listen(10)  # Allows 10 machines to listen
     except OSError as e:
-        print("****Likely the port was already in use.  Increment port by 1 and try again****")
+        print("Likely the port was already in use. Increment by 1 and retry")
         print("The error: " + str(e))
     try:
         print("listening on %s:%s" % (local, port))
         while 'connected':
             # Get connection and the address that you are sending to
-            conn, addr = sock.accept() 
-            # print('Client connected IP:', addr) # Check
-            # Send the Width to the client servers #
+            conn, addr = sock.accept()
+            # Send the Width to the client servers
             conn.send(str(WID).encode('utf-8'))
-            # Send the Height to the client servers #
-            conn.send(str(HGT).encode('utf-8')) 
+            # Send the Height to the client servers
+            conn.send(str(HGT).encode('utf-8'))
             # threads the frames and starts the threads
-            thread = Thread(target=retreive_frame, args=(conn,)) 
+            thread = Thread(target=retreive_frame, args=(conn,))
             thread.start()
-    except:
-        #print("problem")
-        print()
+    except(TimeoutError):
+        print("Timeout")
     finally:
         sock.close()
 
@@ -72,4 +71,3 @@ def main(port=5000):
 if __name__ == '__main__':
     os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
     main()
-    
